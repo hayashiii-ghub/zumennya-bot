@@ -65,6 +65,13 @@ describe('画面', () => {
     for (const lane of Object.values(lanes))
       expect(lane).toMatch(/^<details class="lane lane-\w+"\s*>/)
     expect(board).not.toContain('最近の動き')
+    // 工程ごとの件数と、その案件で最後に書かれた記録が出る
+    expect(board).toContain('図面 <b>1</b>')
+    expect(board).toContain('照合 <b>0/2</b>')
+    expect(board).toContain('レビュー <b>2/2</b>')
+    expect(board).toContain('決定 <b>0/2</b>')
+    expect(board).toContain('書き出し <b>なし</b>')
+    expect(board).toMatch(/最後の動き：ひろいだし ·[^·]+·\s*根拠を追加（E-001）/)
 
     const detail = await (await view(`/p/${p}?c=C-001`)).text()
     expect(detail).toContain('class="panel"')
@@ -114,7 +121,7 @@ describe('画面', () => {
   })
   it('書き出しがあれば、最新の版と結果とシートが出る', async () => {
     const p = await reviewedProject()
-    expect(await (await view(`/p/${p}`)).text()).not.toContain('書き出し')
+    expect(await (await view(`/p/${p}`)).text()).not.toContain('書き出し 版')
     await api('oyakata', 'POST', `/projects/${p}/decisions`, [
       {
         id: 'DC-001',

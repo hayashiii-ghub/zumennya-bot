@@ -13,6 +13,25 @@ const where = (c: Row) =>
   html`${place(c)} ·
   ${c.surface}${c.range_text && c.range_text !== c.surface ? html`<small>${c.range_text}</small>` : ''}`
 
+// 記録の種類を、画面に出す言葉にする。知らない種類はそのまま出す。
+const actionLabel: Record<string, string> = {
+  'project.created': '案件を登録',
+  'source.added': '原本を登録',
+  'drawing_version.recorded': '図面の版を記録',
+  'run.started': '作業を開始',
+  'candidate.created': '候補を追加',
+  'candidate.revised': '候補を更新',
+  'evidence.added': '根拠を追加',
+  'evidence.image_added': '根拠画像を追加',
+  'match.recorded': '照合を記録',
+  'review.checked': 'レビューで確認',
+  'review.recorded': 'レビューを記録',
+  'hold.recorded': '保留を記録',
+  'decision.recorded': '判定を記録',
+  'reference.added': '参考情報を追加',
+  'export.recorded': '書き出しを記録',
+}
+
 export const pages = new Hono<App>()
 
 pages.get('/', async (c) => {
@@ -59,13 +78,23 @@ pages.get('/p/:p', async (c) => {
   const data = await q.project(c.env.DB, id)
   if (!data) return c.notFound()
   const selected = c.req.query('c')
-  const [detail, extras] = await Promise.all([
+  const [detail, extras, [latest]] = await Promise.all([
     selected ? q.candidate(c.env.DB, id, selected) : null,
     q.cardExtras(c.env.DB, id),
+    q.log(c.env.DB, id, 0, 1),
   ])
   const base = `/p/${id}`
   const loose = data.open_findings.filter((f) => !f.candidate_id)
   const ex = data.exports[0]
+  const replaced = new Set(data.drawings.map((d) => d.replaces_id).filter(Boolean))
+  const stages = [
+    ['図面', data.drawings.filter((d) => !replaced.has(d.id)).length],
+    ['候補', data.total],
+    ['照合', `${data.candidates.filter((x) => x.match_result).length}/${data.total}`],
+    ['レビュー', `${data.candidates.filter((x) => x.reviewed_current).length}/${data.total}`],
+    ['決定', `${data.decided}/${data.total}`],
+    ['書き出し', ex ? `版${ex.version}（${ex.kind}）` : 'なし'],
+  ] as const
   // 最終版のあとで候補が変わったら、書き出しは今の中身と合わない
   const stale =
     ex?.kind === '最終版' && (data.decided < data.total || data.open_critical_findings > 0)
@@ -110,6 +139,17 @@ pages.get('/p/:p', async (c) => {
               : ''
           }
         </div>
+        <ul class="stages" aria-label="工程ごとの進み具合">
+          ${stages.map(([label, value]) => html`<li>${label} <b>${value}</b></li>`)}
+        </ul>
+        ${
+          latest
+            ? html`<p class="latest">
+                最後の動き：${who(latest.actor)} · ${jst(latest.at)} ·
+                ${actionLabel[latest.action] ?? latest.action}${latest.target_id ? `（${latest.target_id}）` : ''}
+              </p>`
+            : ''
+        }
         ${
           loose.length
             ? html`<section class="banner" aria-label="候補に紐づかない指摘">

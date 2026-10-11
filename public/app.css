@@ -215,6 +215,26 @@ main {
   margin: 0;
   min-width: min(320px, 100%);
 }
+/* 工程ごとの件数と、最後の動き */
+.stages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1.1rem;
+  margin: -0.4rem 0 0.4rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+  color: var(--dim);
+}
+.stages b {
+  color: var(--kinari);
+  font-weight: 500;
+}
+.latest {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  color: var(--dim);
+}
 
 /* 札 */
 .tag {
