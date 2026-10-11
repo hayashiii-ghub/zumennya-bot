@@ -1,0 +1,27 @@
+{
+  "name": "zumennya-bot",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "cf dev",
+    "build": "cf build",
+    "deploy": "cf deploy",
+    "db:local": "cf d1 migrations apply 4953b8de-7363-417b-b9ed-dcbc3456ced4 --local --persist-to .cloudflare/state",
+    "test": "cf workers types && tsc && vitest run",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "hono": "4.13.8"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "beta",
+    "@cloudflare/vitest-plugin": "1.4.0",
+    "cf": "1.0.0-beta.13",
+    "prettier": "^3.9.8",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.3"
+  }
+}

@@ -1,0 +1,11 @@
+node_modules/
+.cloudflare/
+.dev.vars*
+!.dev.vars.example
+.env*
+*.log
+.DS_Store
+.wrangler/
+work/
+test-results/
+playwright-report/
