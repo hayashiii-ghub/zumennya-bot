@@ -88,7 +88,11 @@ pages.get('/p/:p', async (c) => {
   const ex = data.exports[0]
   const replaced = new Set(data.drawings.map((d) => d.replaces_id).filter(Boolean))
   const stages = [
-    ['図面', data.drawings.filter((d) => !replaced.has(d.id)).length],
+    [
+      '図面',
+      new Set(data.drawings.filter((d) => !replaced.has(d.id)).map((d) => d.drawing_no ?? d.id))
+        .size,
+    ],
     ['候補', data.total],
     ['照合', `${data.candidates.filter((x) => x.match_result).length}/${data.total}`],
     ['レビュー', `${data.candidates.filter((x) => x.reviewed_current).length}/${data.total}`],

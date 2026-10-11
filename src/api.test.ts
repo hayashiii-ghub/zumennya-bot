@@ -272,22 +272,28 @@ describe('追記だけ', () => {
       drive_revision: 'Drive v4',
       replaces_id: 'DV-001',
     }
+    // 改訂版は別のファイルでもよい。差し替えは同じ図面番号どうしで、1つの版に1回だけ
     await api('hiroidashi', 'POST', `/projects/${p}/sources`, {
       id: 'file-2',
-      name: 'F-102.pdf',
+      name: 'F-101_rev01.pdf',
       kind: 'drawing',
     })
     const self = { ...dv, id: 'DV-SELF', replaces_id: 'DV-SELF' }
     expect((await api('hiroidashi', 'POST', `/projects/${p}/drawing-versions`, self)).status).toBe(
       409,
     )
-    const other = { ...dv, id: 'DV-OTHER', source_id: 'file-2' }
-    expect((await api('hiroidashi', 'POST', `/projects/${p}/drawing-versions`, other)).status).toBe(
-      409,
-    )
+    const otherNo = { ...dv, id: 'DV-OTHER', source_id: 'file-2', drawing_no: 'F-102' }
     expect(
-      (await api('hiroidashi', 'POST', `/projects/${p}/drawing-versions`, { ...dv, id: 'DV-002' }))
-        .status,
+      (await api('hiroidashi', 'POST', `/projects/${p}/drawing-versions`, otherNo)).status,
+    ).toBe(409)
+    expect(
+      (
+        await api('hiroidashi', 'POST', `/projects/${p}/drawing-versions`, {
+          ...dv,
+          id: 'DV-002',
+          source_id: 'file-2',
+        })
+      ).status,
     ).toBe(201)
     expect(
       (await api('hiroidashi', 'POST', `/projects/${p}/drawing-versions`, { ...dv, id: 'DV-003' }))

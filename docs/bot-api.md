@@ -102,7 +102,7 @@ POST /projects/sazanami/drawing-versions
 { "id": "DV-001", "source_id": "<Drive のファイルID>", "drawing_no": "F-101", "title": "仕上表",
   "revision_label": "A", "drive_revision": "Drive v3", "page_count": 2, "replaces_id": null }
 // 発行日は revision_label に書く（例 "B（2026-09-30 発行）"）。page_count は原本のページ数で、根拠の page はそれを超えられない。
-// 差し替え（replaces_id）は最新の版に対して1回だけ。
+// 差し替え（replaces_id）は、同じ図面番号の最新の版に対して1回だけ。改訂版が別のファイルでもよい（先に sources に登録する）。
 
 POST /projects/sazanami/runs
 { "id": "RUN-001", "kind": "extract", "method": "読み取りの方法（道具と版）" }
