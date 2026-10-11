@@ -237,7 +237,18 @@ describe('追記だけ', () => {
     expect(row!.image_key).toMatch(new RegExp(`^p/${p}/evidence/E-001/`))
     expect(await (await testEnv.IMAGES.get(row!.image_key))!.text()).toHaveLength(4)
 
+    // レビューのために、鍵つきで同じ画像を読める
     const { default: app } = await import('./index')
+    const read = await app.request(
+      `https://zumen.test/api/projects/${p}/evidence/E-001/image`,
+      { headers: { authorization: 'Bearer test-bot-key', 'x-bot': 'kakunin' } },
+      testEnv,
+    )
+    expect(read.status).toBe(200)
+    expect(read.headers.get('content-type')).toBe('image/png')
+    expect((await read.arrayBuffer()).byteLength).toBe(4)
+    expect((await api('kakunin', 'GET', `/projects/${p}/evidence/E-404/image`)).status).toBe(404)
+
     const again = await app.request(
       `https://zumen.test/api/projects/${p}/evidence/E-001/image`,
       {

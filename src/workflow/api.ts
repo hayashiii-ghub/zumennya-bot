@@ -460,6 +460,20 @@ api.post('/projects/:p/evidence', async (c) => {
   }
   return c.json({ ok: true, ids: parsed.map((r) => r.id) }, 201)
 })
+// レビューのために、根拠画像を鍵つきで読む（画面の /img と同じものを返す）
+api.get('/projects/:p/evidence/:e/image', async (c) => {
+  const row = await one<{ image_key: string | null }>(
+    c.env.DB,
+    'SELECT image_key FROM evidence WHERE project_id=? AND id=?',
+    c.req.param('p'),
+    c.req.param('e'),
+  )
+  const object = row?.image_key ? await c.env.IMAGES.get(row.image_key) : null
+  if (!object) fail('根拠画像が見つかりません。', 404)
+  c.header('Content-Type', object.httpMetadata?.contentType ?? 'application/octet-stream')
+  c.header('X-Content-Type-Options', 'nosniff')
+  return c.body(object.body)
+})
 api.put('/projects/:p/evidence/:e/image', async (c) => {
   const bot = c.get('bot')
   allow(bot, ['hiroidashi'])
