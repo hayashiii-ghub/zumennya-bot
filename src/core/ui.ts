@@ -58,7 +58,6 @@ export function page(title: string, body: unknown, opts: { home?: boolean; theme
         <header class="bar">
           <a class="home" href="/" ${current(!!opts.home)}>${listIcon}案件一覧</a>
           <div class="bar-end">
-            <span class="tag t-check">デモ（架空のデータ）</span>
             <form class="theme" method="post" action="/theme">
               <button class="link to-light" type="submit" name="theme" value="light">
                 ライト表示

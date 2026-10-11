@@ -2,17 +2,15 @@ import { describe, expect, it } from 'vitest'
 import { api, reviewedProject, view } from './test-helpers'
 
 describe('公開のデモ', () => {
-  it('ログインなしで見られ、どの画面にもデモと出る', async () => {
+  it('ログインなしで見られ、検索エンジンには載せない', async () => {
     const res = await view('/')
     expect(res.status).toBe(200)
     const csp = res.headers.get('content-security-policy')!
     expect(csp).toContain("script-src 'none'")
     expect(csp).not.toContain('accounts.google.com')
     const body = await res.text()
-    expect(body).toContain('デモ（架空のデータ）')
     expect(body).toContain('<meta name="robots" content="noindex,nofollow" />')
     expect(body).not.toContain('ログアウト')
-    expect(await (await view('/p/nothing-here')).text()).toContain('デモ（架空のデータ）')
   })
   it('ほかのサイトからの明るさの送信は受け付けない', async () => {
     const res = await view('/theme', {
