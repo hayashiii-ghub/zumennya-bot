@@ -194,170 +194,175 @@ function panel(d: Detail, base: string) {
     ...d.holds.map((x) => ({ at: x.created_at, kind: 'hold', x })),
   ].sort((a, b) => String(a.at).localeCompare(String(b.at)))
   return html`<a class="close" href="${base}"><span aria-hidden="true">✕</span> 閉じる</a>
-    <h2><span class="id">${c.candidate_id}</span> ${where(c)}</h2>
-    <p class="meta">
-      ${tag(c.state)} 版
-      ${c.version}${c.reviewed && !c.reviewed_current ? '（この版はレビュー前）' : ''}
-    </p>
-    <dl class="facts">
-      ${
-        c.symbol
-          ? html`<dt>記号</dt>
-              <dd>${c.symbol}</dd>`
-          : ''
-      }
-      <dt>仕上げ</dt>
-      <dd>${c.finish ?? '―'}</dd>
-      <dt>品番</dt>
-      <dd>${c.code ?? '品番なし'}</dd>
-      ${
-        c.needs_check_reason
-          ? html`<dt>要確認の理由</dt>
-              <dd>${c.needs_check_reason}</dd>`
-          : ''
-      }
-      ${
-        c.note
-          ? html`<dt>メモ</dt>
-              <dd>${c.note}</dd>`
-          : ''
-      }
-    </dl>
-
-    <h3>根拠</h3>
-    ${
-      d.evidence.length
-        ? html`<div class="evidence">
-            ${d.evidence.map(
-              (e) =>
-                html`<figure>
-                  ${
-                    e.image_key
-                      ? html`<img
-                          src="/img/${e.image_key}"
-                          alt="${e.drawing_no ?? e.source_name} ${e.page}ページ ${e.kind}の切り出し"
-                          loading="lazy"
-                        />`
-                      : html`<div class="noimage">画像はまだありません</div>`
-                  }
-                  <figcaption>
-                    <strong>${e.id}</strong> ${e.drawing_no ?? e.source_name}
-                    ${e.revision_label ? `（${e.revision_label}）` : ''} · ${e.page}ページ ·
-                    ${e.kind}
-                    <q>${e.text}</q>
-                    ${e.room_method ? html`<small>部屋の決め方：${e.room_method}</small>` : ''}
-                    ${
-                      e.source_url
-                        ? html`<a href="${e.source_url}" target="_blank" rel="noopener noreferrer"
-                            >原本を開く<span aria-hidden="true"> ↗</span
-                            ><span class="sr-only"
-                              >（${e.drawing_no ?? e.source_name}、新しいタブで開きます）</span
-                            ></a
-                          >`
-                        : ''
-                    }
-                  </figcaption>
-                </figure>`,
-            )}
-          </div>`
-        : html`<p class="note">根拠はまだありません。</p>`
-    }
-
-    <h3>照合</h3>
-    ${
-      d.matches.length
-        ? html`<ul class="plain">
-            ${d.matches.map(
-              (m) =>
-                html`<li>
-                  ${tag(String(m.result))} 版 ${m.candidate_version}
-                  ${
-                    m.catalog_code
-                      ? html`${m.catalog_code} ${m.item_name ?? ''}（${m.maker} ${m.catalog_title}
-                        ${m.edition}）`
-                      : ''
-                  }
-                  ${m.discontinued ? tag('廃番') : ''}
-                  ${m.note ? html`<small>${m.note}</small>` : ''}
-                </li>`,
-            )}
-          </ul>`
-        : html`<p class="note">まだ照合していません。</p>`
-    }
-
-    <h3>レビュー</h3>
-    ${
-      d.checks.length
-        ? html`<p class="note">
-            かくにんが見た版：${[...new Set(d.checks.map((k) => k.candidate_version))].join('・')}
-          </p>`
-        : html`<p class="note">まだレビューしていません。</p>`
-    }
-    ${findings.map((f) => {
-      const done = resolutions.find((r) => r.resolves_id === f.id)
-      return html`<div class="finding${done ? ' done' : ''}">
-        ${tag(String(f.severity))} <strong>${f.id}</strong>（版 ${f.candidate_version}）${f.finding}
-        <small>${who(f.created_by)} · ${jst(f.created_at)}</small>
+    <div class="panel-body">
+      <h2><span class="id">${c.candidate_id}</span> ${where(c)}</h2>
+      <p class="meta">
+        ${tag(c.state)} 版
+        ${c.version}${c.reviewed && !c.reviewed_current ? '（この版はレビュー前）' : ''}
+      </p>
+      <dl class="facts">
         ${
-          done
-            ? html`<p class="resolution">
-                閉じた：${done.resolution_note}
-                <small
-                  >${done.decided_by ? `${done.decided_by}（本人確認なし・${who(done.created_by)}が記録）` : who(done.created_by)}
-                  · ${jst(done.created_at)}</small
-                >
-              </p>`
-            : html`<p class="resolution open">まだ閉じていません</p>`
+          c.symbol
+            ? html`<dt>記号</dt>
+                <dd>${c.symbol}</dd>`
+            : ''
         }
-      </div>`
-    })}
+        <dt>仕上げ</dt>
+        <dd>${c.finish ?? '―'}</dd>
+        <dt>品番</dt>
+        <dd>${c.code ?? '品番なし'}</dd>
+        ${
+          c.needs_check_reason
+            ? html`<dt>要確認の理由</dt>
+                <dd>${c.needs_check_reason}</dd>`
+            : ''
+        }
+        ${
+          c.note
+            ? html`<dt>メモ</dt>
+                <dd>${c.note}</dd>`
+            : ''
+        }
+      </dl>
 
-    <h3>判定と保留</h3>
-    ${
-      history.length
-        ? html`<ol class="timeline">
-            ${history.map(({ kind, x }) =>
-              kind === 'decision'
-                ? html`<li>
-                    ${tag(String(x.decision))} 版 ${x.candidate_version} を ${x.decided_by}
-                    が${x.decision}
-                    <small
-                      >${jst(x.created_at)} · チャットで受けたもの（本人確認なし） ·
-                      ${x.id}${x.batch_id ? ` · まとめて：${x.batch_id}` : ''}</small
-                    >
+      <h3>根拠</h3>
+      ${
+        d.evidence.length
+          ? html`<div class="evidence">
+              ${d.evidence.map(
+                (e) =>
+                  html`<figure>
                     ${
-                      x.pattern_id
-                        ? html`<p class="pattern">
-                            判断パターン
-                            ${x.pattern_id}${x.pattern_title ? `「${x.pattern_title}」` : ''}
-                            ${x.pattern_rule ? html`<small>${x.pattern_rule}</small>` : ''}
-                          </p>`
+                      e.image_key
+                        ? html`<img
+                            src="/img/${e.image_key}"
+                            alt="${e.drawing_no ?? e.source_name} ${e.page}ページ ${e.kind}の切り出し"
+                            loading="lazy"
+                          />`
+                        : html`<div class="noimage">画像はまだありません</div>`
+                    }
+                    <figcaption>
+                      <strong>${e.id}</strong> ${e.drawing_no ?? e.source_name}
+                      ${e.revision_label ? `（${e.revision_label}）` : ''} · ${e.page}ページ ·
+                      ${e.kind}
+                      <q>${e.text}</q>
+                      ${e.room_method ? html`<small>部屋の決め方：${e.room_method}</small>` : ''}
+                      ${
+                        e.source_url
+                          ? html`<a href="${e.source_url}" target="_blank" rel="noopener noreferrer"
+                              >原本を開く<span aria-hidden="true"> ↗</span
+                              ><span class="sr-only"
+                                >（${e.drawing_no ?? e.source_name}、新しいタブで開きます）</span
+                              ></a
+                            >`
+                          : ''
+                      }
+                    </figcaption>
+                  </figure>`,
+              )}
+            </div>`
+          : html`<p class="note">根拠はまだありません。</p>`
+      }
+
+      <h3>照合</h3>
+      ${
+        d.matches.length
+          ? html`<ul class="plain">
+              ${d.matches.map(
+                (m) =>
+                  html`<li>
+                    ${tag(String(m.result))} 版 ${m.candidate_version}
+                    ${
+                      m.catalog_code
+                        ? html`${m.catalog_code} ${m.item_name ?? ''}（${m.maker} ${m.catalog_title}
+                          ${m.edition}）`
                         : ''
                     }
-                    ${x.note ? html`<p>${x.note}</p>` : ''}
-                  </li>`
-                : html`<li>
-                    ${tag('保留')}
-                    ${x.releases_id ? html`${x.releases_id} を解除：${x.release_note}` : x.reason}
-                    <small>${x.decided_by}（本人確認なし） · ${jst(x.created_at)} · ${x.id}</small>
+                    ${m.discontinued ? tag('廃番') : ''}
+                    ${m.note ? html`<small>${m.note}</small>` : ''}
                   </li>`,
-            )}
-          </ol>`
-        : html`<p class="note">まだ判定していません。</p>`
-    }
+              )}
+            </ul>`
+          : html`<p class="note">まだ照合していません。</p>`
+      }
 
-    <h3>版の履歴</h3>
-    <ol class="timeline">
-      ${d.versions.map(
-        (v) =>
-          html`<li>
-            版 ${v.version}：${v.finish ?? '―'} / ${v.code ?? '品番なし'}
-            ${v.status === '要確認' ? tag('要確認') : ''}
-            <small>${who(v.created_by)} · ${jst(v.created_at)}</small>
-            ${v.reason ? html`<p>${v.reason}</p>` : ''}
-          </li>`,
-      )}
-    </ol>`
+      <h3>レビュー</h3>
+      ${
+        d.checks.length
+          ? html`<p class="note">
+              かくにんが見た版：${[...new Set(d.checks.map((k) => k.candidate_version))].join('・')}
+            </p>`
+          : html`<p class="note">まだレビューしていません。</p>`
+      }
+      ${findings.map((f) => {
+        const done = resolutions.find((r) => r.resolves_id === f.id)
+        return html`<div class="finding${done ? ' done' : ''}">
+          ${tag(String(f.severity))} <strong>${f.id}</strong>（版
+          ${f.candidate_version}）${f.finding}
+          <small>${who(f.created_by)} · ${jst(f.created_at)}</small>
+          ${
+            done
+              ? html`<p class="resolution">
+                  閉じた：${done.resolution_note}
+                  <small
+                    >${done.decided_by ? `${done.decided_by}（本人確認なし・${who(done.created_by)}が記録）` : who(done.created_by)}
+                    · ${jst(done.created_at)}</small
+                  >
+                </p>`
+              : html`<p class="resolution open">まだ閉じていません</p>`
+          }
+        </div>`
+      })}
+
+      <h3>判定と保留</h3>
+      ${
+        history.length
+          ? html`<ol class="timeline">
+              ${history.map(({ kind, x }) =>
+                kind === 'decision'
+                  ? html`<li>
+                      ${tag(String(x.decision))} 版 ${x.candidate_version} を ${x.decided_by}
+                      が${x.decision}
+                      <small
+                        >${jst(x.created_at)} · チャットで受けたもの（本人確認なし） ·
+                        ${x.id}${x.batch_id ? ` · まとめて：${x.batch_id}` : ''}</small
+                      >
+                      ${
+                        x.pattern_id
+                          ? html`<p class="pattern">
+                              判断パターン
+                              ${x.pattern_id}${x.pattern_title ? `「${x.pattern_title}」` : ''}
+                              ${x.pattern_rule ? html`<small>${x.pattern_rule}</small>` : ''}
+                            </p>`
+                          : ''
+                      }
+                      ${x.note ? html`<p>${x.note}</p>` : ''}
+                    </li>`
+                  : html`<li>
+                      ${tag('保留')}
+                      ${x.releases_id ? html`${x.releases_id} を解除：${x.release_note}` : x.reason}
+                      <small
+                        >${x.decided_by}（本人確認なし） · ${jst(x.created_at)} · ${x.id}</small
+                      >
+                    </li>`,
+              )}
+            </ol>`
+          : html`<p class="note">まだ判定していません。</p>`
+      }
+
+      <h3>版の履歴</h3>
+      <ol class="timeline">
+        ${d.versions.map(
+          (v) =>
+            html`<li>
+              版 ${v.version}：${v.finish ?? '―'} / ${v.code ?? '品番なし'}
+              ${v.status === '要確認' ? tag('要確認') : ''}
+              <small>${who(v.created_by)} · ${jst(v.created_at)}</small>
+              ${v.reason ? html`<p>${v.reason}</p>` : ''}
+            </li>`,
+        )}
+      </ol>
+    </div>`
 }
 
 // 明るさの切り替え。押した画面へそのまま戻る。

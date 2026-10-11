@@ -19,25 +19,6 @@ const listIcon = html`<svg viewBox="0 0 16 16" width="15" height="15" aria-hidde
     stroke-width="1.4"
   />
 </svg>`
-const sunIcon = html`<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
-  <circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.4" />
-  <path
-    d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6 13 13M3 13l1.4-1.4M11.6 4.4 13 3"
-    stroke="currentColor"
-    stroke-width="1.4"
-    stroke-linecap="round"
-  />
-</svg>`
-const moonIcon = html`<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
-  <path
-    d="M13.5 10.2A5.5 5.5 0 0 1 5.8 2.5a5.5 5.5 0 1 0 7.7 7.7z"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="1.4"
-    stroke-linejoin="round"
-  />
-</svg>`
-
 export function page(title: string, body: unknown, opts: { home?: boolean; theme?: Theme } = {}) {
   const theme = opts.theme
   return html`<!doctype html>
@@ -80,10 +61,10 @@ export function page(title: string, body: unknown, opts: { home?: boolean; theme
             <span class="tag t-check">デモ（架空のデータ）</span>
             <form class="theme" method="post" action="/theme">
               <button class="link to-light" type="submit" name="theme" value="light">
-                ${sunIcon}<span>ライト表示</span>
+                ライト表示
               </button>
               <button class="link to-dark" type="submit" name="theme" value="dark">
-                ${moonIcon}<span>ダーク表示</span>
+                ダーク表示
               </button>
             </form>
           </div>

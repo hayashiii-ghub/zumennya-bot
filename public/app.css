@@ -193,16 +193,6 @@ small {
 :root[data-theme='light'] .theme .to-dark {
   display: inline-flex;
 }
-@media (max-width: 599px) {
-  .theme span {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-}
 main {
   padding: 16px 16px calc(48px + env(safe-area-inset-bottom));
 }
@@ -428,12 +418,23 @@ progress {
   font-family: var(--marker);
   color: var(--dim);
 }
+/* 閉じるは動かさず、中身だけをスクロールする。端まで来てもページへスクロールを渡さない。 */
 .panel {
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 0.6rem 1.1rem 1.2rem;
+  position: fixed;
+  z-index: 3;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top) 16px 0;
   background: var(--ji);
   min-width: 0;
+}
+.panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: calc(1.2rem + env(safe-area-inset-bottom));
 }
 .panel h2 {
   margin-top: 0.6rem;
@@ -450,18 +451,23 @@ progress {
   .board {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
-  .board-wrap.has-panel {
-    grid-template-columns: minmax(0, 1fr) min(500px, 40vw);
+  /* パネルは画面に固定するので、ページ側は右にその幅を空けておく */
+  main:has(.panel) {
+    padding-right: calc(min(500px, 40vw) + 32px);
   }
   .panel {
-    position: sticky;
-    top: 68px;
-    max-height: calc(100svh - 84px);
-    overflow-y: auto;
+    inset: calc(68px + env(safe-area-inset-top)) 16px 16px auto;
+    width: min(500px, 40vw);
+    padding: 0 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: 16px;
   }
 }
+/* スマホでは詳細が全画面を覆うので、裏に隠れたものにフォーカスが行かないよう外しておく */
 @media (max-width: 899px) {
-  .board-wrap.has-panel .board {
+  .board-wrap.has-panel .board,
+  body:has(.panel) .bar,
+  main:has(.panel) > :not(.board-wrap) {
     display: none;
   }
 }
