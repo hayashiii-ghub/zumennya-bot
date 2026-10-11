@@ -3,10 +3,10 @@
 図面帳の記録は、すべてこの API で書き込む。D1・R2 を直接さわらず、Cloudflare の鍵で SQL を書かない。画面は人が見るためのもので、ボットは使わない。
 
 - 公開先: `<公開先>/api`（公開先の URL はこのリポジトリに書かない。別に伝える）
-- ヘッダー（すべての呼び出し）
-  - `Authorization: Bearer <BOT_API_KEY>`（秘密値。チャットや作業フォルダに書かない）
-  - `X-Bot: oyakata | hiroidashi | katarogu | kakunin | kakidashi`（自分の名前）
-  - `Content-Type: application/json`
+- ヘッダー
+  - `Authorization: Bearer <BOT_API_KEY>`（すべての呼び出し。秘密値なので、チャットや作業フォルダに書かない）
+  - `X-Bot: oyakata | hiroidashi | katarogu | kakunin | kakidashi`（すべての呼び出し。自分の名前）
+  - `Content-Type: application/json`（JSON を送るとき。`PUT …/evidence/<根拠>/image` は画像の種類）
 
 鍵は全ボット共通で、`X-Bot` は申告にすぎない。役割ごとの書ける範囲は書き間違いを防ぐためのもので、本人確認ではない。
 
@@ -18,8 +18,8 @@ Drive とシートのリンクは画面に出る。共有の設定は変えな�
 
 - ID は自分で付ける。英数字と `- _ .`（例 `C-001`, `E-012`, `RV-001`, `DC-008`）。案件の ID は小文字の英数字と `-`（例 `sazanami`）。
 - 一度書いた記録は直せない・消せない。直したいときは新しい行（候補なら新しい版、指摘なら解決の行、保留なら解除の行）を足す。
-- まとめて送るときは配列で最大200件。1回の送信は全部成功か全部失敗のどちらか。本文は8MBまで。画像は `PUT …/evidence/<根拠>/image` で1枚ずつ送る。
-- `POST /projects`・`…/candidates/<候補>/versions`・`…/discontinue`・`…/retire` は1件ずつ（配列は `400`）。
+- まとめて送るときは配列で最大200件。1回の送信は全部成功か全部失敗のどちらか。本文は8MBまで。根拠画像は `POST …/evidence` の `image` で一緒に送るか、あとから `PUT …/evidence/<根拠>/image` で1枚ずつ足す。
+- `POST /projects`・`…/candidates/<候補>/versions`・`…/discontinue`・`…/retire`・`…/log` は1件ずつ（配列は `400`）。
 - 候補の新しい版は、前の版の中身を引き継がない。変わらない項目（部屋・記号・範囲など）も、毎回すべて入れ直す。
 - 返事: 成功は `201`。失敗は `{ "error": "..." }` で、`400` 入力の形や項目の組み合わせ（例：一致なのにカタログの品番がない、最終版なのに `verify_result` が `一致` でない）、`401` 鍵が違う、`403` 役割違い、`404` 見つからない、`409` 決まりに合わない・ID の重複・参照先がない・ほかの更新と重なった、`413` 大きすぎる。`400` は送る中身を直す。`409` は読み直してから考える。
 - 読めない値は推測しない。`status: "要確認"` と `needs_check_reason` を入れる。値に「要確認」と書いたまま `status: "候補"` にはできない。
@@ -33,6 +33,25 @@ DB が止める承認の決まり:
 4. 保留中の候補は承認できない（対象外にはできる）。
 5. かくにんが一度もレビューしていない候補は承認できない。直した版のレビューをやり直すかは、おやかたの判断（DB では止めない）。
 6. 書き出しの最終版は、候補が1件以上あり、すべての候補が承認か対象外になり、保留と重大な指摘（候補のない見落としも）がなくなってから。`verify_result` は `一致` にする。直すときは上書きせず、次の版の書き出しを足す。
+
+## 書ける役割
+
+役割が違うと `403`。`…` は `/projects/<案件>`。
+
+| 入口                                                                                 | 書けるボット                   |
+| ------------------------------------------------------------------------------------ | ------------------------------ |
+| `POST /projects`                                                                     | おやかた                       |
+| `…/sources`                                                                          | おやかた・ひろいだし・かたろぐ |
+| `…/drawing-versions`・`…/candidates`・`…/evidence`・`PUT …/evidence/<根拠>/image`    | ひろいだし                     |
+| `…/runs`                                                                             | ひろいだし・かたろぐ・かくにん |
+| `…/candidates/<候補>/versions`                                                       | ひろいだし・おやかた           |
+| `…/references`                                                                       | ひろいだし・かくにん・おやかた |
+| `/catalogs`・`/catalogs/<カタログ>/items`・`…/items/<品番>/discontinue`・`…/matches` | かたろぐ                       |
+| `…/review-checks`                                                                    | かくにん                       |
+| `…/reviews`                                                                          | かくにん・おやかた             |
+| `…/holds`・`…/decisions`・`/patterns`・`/patterns/<パターン>/retire`                 | おやかた                       |
+| `…/exports`                                                                          | かきだし                       |
+| `…/log`                                                                              | 全員                           |
 
 ## 読む（全員）
 
@@ -49,6 +68,15 @@ DB が止める承認の決まり:
 根拠画像は、上の `GET …/evidence/<根拠>/image` で取れます。画面側の `<公開先>/img/<image_key>` でも同じものが取れます（こちらは鍵が要りません。`image_key` は候補の詳細の `evidence[].image_key`）。
 
 候補の状態は `承認待ち`・`要確認`・`重大あり`・`保留`・`未レビュー`・`承認済み`・`対象外`。
+
+## 自由な記録（全員）
+
+決まった入口のない作業（例：シートの控えを残した）を、記録の履歴に足す。`action` は `backup.saved` のように、小文字と `_` の語を `.` でつないだ形（2語以上）。`target_id` と `detail`（オブジェクト）は任意。
+
+```http
+POST /projects/sazanami/log
+{ "action": "backup.saved", "target_id": "sheet", "detail": { "url": "https://docs.google.com/spreadsheets/d/..." } }
+```
 
 ## おやかた（oyakata）
 

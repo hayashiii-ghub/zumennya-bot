@@ -7,5 +7,3 @@ node_modules/
 .DS_Store
 .wrangler/
 work/
-test-results/
-playwright-report/

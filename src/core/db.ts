@@ -7,10 +7,7 @@ export const one = <T>(db: D1Database, sql: string, ...args: unknown[]) =>
 export const all = async <T>(db: D1Database, sql: string, ...args: unknown[]) =>
   (await stmt(db, sql, ...args).all<T>()).results
 
-export function fail(
-  message: string,
-  status: 400 | 401 | 403 | 404 | 409 | 413 | 503 = 400,
-): never {
+export function fail(message: string, status: 400 | 403 | 404 | 409 | 413 = 400): never {
   throw new HTTPException(status, { message })
 }
 

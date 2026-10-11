@@ -456,6 +456,15 @@ describe('カタログ・判断パターン・ログ', () => {
     expect(forward.json[0].seq).toBe(first + 1)
     expect(forward.json[1].seq).toBeGreaterThan(forward.json[0].seq)
   })
+
+  it('ログの detail はオブジェクトだけ（配列は 400）', async () => {
+    const p = await reviewedProject()
+    const r = await api('kakidashi', 'POST', `/projects/${p}/log`, {
+      action: 'backup.saved',
+      detail: ['sheet'],
+    })
+    expect(r.status).toBe(400)
+  })
 })
 
 describe('書き出し', () => {

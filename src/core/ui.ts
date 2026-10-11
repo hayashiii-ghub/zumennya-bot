@@ -3,7 +3,7 @@ import { getCookie } from 'hono/cookie'
 import { html, raw } from 'hono/html'
 
 // 表示の明るさは、押すまで端末に合わせる。押したら cookie に覚える。
-export type Theme = 'light' | 'dark'
+type Theme = 'light' | 'dark'
 export const themeOf = (c: Context): Theme | undefined => {
   const t = getCookie(c, 'theme')
   return t === 'light' || t === 'dark' ? t : undefined

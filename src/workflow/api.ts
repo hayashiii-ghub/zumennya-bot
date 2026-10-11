@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
 import { BOTS, type App, type Bot } from '../core/types'
-import { all, dbError, fail, one, stmt } from '../core/db'
+import { dbError, fail, one, stmt } from '../core/db'
 import * as q from './queries'
 
 // ボットの鍵は1つで、どのボットかは X-Bot の申告。下の actors は書き間違いを防ぐためのもので、本人確認ではない。
@@ -354,7 +354,10 @@ api.post('/projects/:p/log', async (c) => {
   )
   if (!/^[a-z_]+(\.[a-z_]+)+$/.test(String(row!.action)))
     fail('action は backup.saved のような形にしてください。')
-  if (input.detail !== undefined && (typeof input.detail !== 'object' || input.detail === null))
+  if (
+    input.detail !== undefined &&
+    (typeof input.detail !== 'object' || input.detail === null || Array.isArray(input.detail))
+  )
     fail('detail はオブジェクトにしてください。')
   await run(c.env.DB, [
     event(c.env.DB, p, bot, String(row!.action), row!.target_id, input.detail ?? {}),
@@ -612,7 +615,7 @@ api.post('/patterns/:id/retire', async (c) => {
   allow(bot, ['oyakata'])
   const [row] = rows(single(await body(c)), { note: 'long' })
   const id = c.req.param('id')
-  if (!(await all(c.env.DB, 'SELECT 1 FROM judgment_patterns WHERE id=?', id)).length)
+  if (!(await one(c.env.DB, 'SELECT 1 AS ok FROM judgment_patterns WHERE id=?', id)))
     fail('判断パターンが見つかりません。', 404)
   await run(c.env.DB, [
     stmt(

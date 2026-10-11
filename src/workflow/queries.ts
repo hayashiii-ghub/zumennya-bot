@@ -1,6 +1,6 @@
 import { all, one } from '../core/db'
 
-export const STATES = [
+const STATES = [
   '承認待ち',
   '要確認',
   '重大あり',
@@ -35,8 +35,8 @@ export type CandidateState = {
 }
 
 // 判定は今の版に対するものだけを見る。版が変わったら、前の承認は引き継がない。
-// レビュー前の候補は、要確認でもまずボットの番として扱う（v2 の流れではレビューのあとに人へ聞く）。
-export function stateOf(c: CandidateState): State {
+// レビュー前の候補は、要確認でもまずボットの番として扱う（人へ聞くのはレビューのあと）。
+function stateOf(c: CandidateState): State {
   if (c.hold_id) return '保留'
   if (c.decision === '承認') return '承認済み'
   if (c.decision === '対象外') return '対象外'
