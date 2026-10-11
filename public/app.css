@@ -502,11 +502,20 @@ figure {
   overflow: hidden;
   background: var(--raised);
 }
-figure img {
+/* 切り出しは形も大きさもばらばらなので、引き伸ばさず、大きいときだけ枠に収める。押すと原寸で開く。 */
+.shot {
   display: block;
-  width: 100%;
-  height: auto;
+  min-height: 44px;
+  padding: 8px;
   background: #fff;
+}
+.shot img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 240px;
+  margin: 0 auto;
 }
 .noimage {
   display: grid;

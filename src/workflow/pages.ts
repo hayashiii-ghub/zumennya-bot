@@ -234,11 +234,17 @@ function panel(d: Detail, base: string) {
                   html`<figure>
                     ${
                       e.image_key
-                        ? html`<img
-                            src="/img/${e.image_key}"
-                            alt="${e.drawing_no ?? e.source_name} ${e.page}ページ ${e.kind}の切り出し"
-                            loading="lazy"
-                          />`
+                        ? html`<a
+                            class="shot"
+                            href="/img/${e.image_key}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            ><img
+                              src="/img/${e.image_key}"
+                              alt="${e.drawing_no ?? e.source_name} ${e.page}ページ ${e.kind}の切り出し"
+                              loading="lazy"
+                            /><span class="sr-only">（原寸で新しいタブに開きます）</span></a
+                          >`
                         : html`<div class="noimage">画像はまだありません</div>`
                     }
                     <figcaption>
