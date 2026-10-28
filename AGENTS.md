@@ -24,4 +24,5 @@
 - Bun 1.4.2を使い、`bun install --frozen-lockfile`。変更後は `bun run format:check`、`bun run test`、`bun run build`。画面変更時はスマホ・PCを確認し、確認用サーバーを停止する。
 - 初回は `bunx cf auth login` 後、`bunx cf d1 create zumennya-bot` と `bunx cf r2 buckets create` で非公開のD1・R2を用意し、`cloudflare.config.ts` と `package.json` のIDを揃える。
 - 本番への移行は `bunx cf d1 migrations apply <D1のID>`。初回の公開は `bunx cf deploy --secrets-file <秘密値のファイル>` で `BOT_API_KEY` を登録し、以後は `bun run deploy`。既存のリソースと秘密値を保持する。
+- API経由の公開との競合でcfが止まった場合は、差分と再公開の承認を確認する。未確認の強制フラグや別の公開APIへ切り替えない。
 - 本番URLは別に伝え、Gitに書かない。鍵は秘密値の入力欄で渡す。公開後は画面と認証を確認する。
