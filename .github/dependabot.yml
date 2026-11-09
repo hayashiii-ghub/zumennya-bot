@@ -8,8 +8,23 @@ updates:
       time: '09:00'
       timezone: Asia/Tokyo
     open-pull-requests-limit: 3
+    cooldown:
+      default-days: 3
     groups:
-      minor-and-patch:
+      development:
+        applies-to: version-updates
+        patterns:
+          - '@cloudflare/vite-plugin'
+          - '@cloudflare/vitest-plugin'
+          - cf
+          - prettier
+          - typescript
+          - vite
+          - vitest
+        update-types:
+          - minor
+          - patch
+      production:
         applies-to: version-updates
         patterns:
           - '*'
@@ -24,6 +39,8 @@ updates:
       time: '09:00'
       timezone: Asia/Tokyo
     open-pull-requests-limit: 3
+    cooldown:
+      default-days: 3
     groups:
       minor-and-patch:
         applies-to: version-updates
