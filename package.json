@@ -13,7 +13,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "hono": "4.13.14"
+    "hono": "4.13.17"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "2.0.0-beta.v.12",
